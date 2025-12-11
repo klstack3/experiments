@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import ImageUpload from './components/ImageUpload';
-import StyleSelector from './components/StyleSelector';
-import ComparisonView from './components/ComparisonView';
-import LoadingSpinner from './components/LoadingSpinner';
+import React, { useState } from "react";
+import ImageUpload from "./components/ImageUpload";
+import StyleSelector from "./components/StyleSelector";
+import ComparisonView from "./components/ComparisonView";
+import LoadingSpinner from "./components/LoadingSpinner";
+import apiClient from './utils/api';
 
 function App() {
   const [step, setStep] = useState(1);
-  const [uploadedImage, setUploadedImage] = useState(null);
+  const [uploadData, setUploadData] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(null);
-  const [generatedImage, setGeneratedImage] = useState(null);
+  const [generatedData, setGeneratedData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleImageUpload = (file) => {
-    setUploadedImage(file);
+  const handleImageUpload = (data) => {
+    setUploadData(data);
+    setError(null);
     setStep(2);
   };
 
@@ -21,23 +24,41 @@ function App() {
     setStep(3);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (!uploadData || !selectedStyle) return;
+
     setIsLoading(true);
-    // Mock generation with a delay
-    setTimeout(() => {
-      // Using a placeholder generated image for Milestone 1
-      setGeneratedImage('/placeholder-headshot.jpg');
+    setError(null);
+
+    try {
+      // Generate headshot using real AI API
+      const result = await apiClient.generateHeadshot(uploadData.sessionId, selectedStyle);
+      
+      if (result.success) {
+        setGeneratedData({
+          imageId: result.data.imageId,
+          imageUrl: apiClient.getImageUrl(result.data.imageId),
+          downloadUrl: apiClient.getDownloadUrl(result.data.imageId),
+          style: result.data.style,
+          processingTime: result.data.processingTime
+        });
+        setStep(4);
+      }
+    } catch (error) {
+      console.error('Generation failed:', error);
+      setError(error.message);
+    } finally {
       setIsLoading(false);
-      setStep(4);
-    }, 3000);
+    }
   };
 
   const handleReset = () => {
     setStep(1);
-    setUploadedImage(null);
+    setUploadData(null);
     setSelectedStyle(null);
-    setGeneratedImage(null);
+    setGeneratedData(null);
     setIsLoading(false);
+    setError(null);
   };
 
   return (
@@ -56,8 +77,8 @@ function App() {
                     key={num}
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       step >= num
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-600"
                     }`}
                   >
                     {num}
@@ -103,23 +124,32 @@ function App() {
             <p className="text-lg text-gray-600 mb-8">
               Ready to create your professional headshot?
             </p>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+                <p className="text-red-700">{error}</p>
+              </div>
+            )}
+            
             <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
               <div className="mb-6">
-                <img
-                  src={uploadedImage}
-                  alt="Uploaded"
-                  className="w-32 h-32 object-cover rounded-full mx-auto mb-4"
-                />
+                {uploadData && (
+                  <img
+                    src={uploadData.previewUrl}
+                    alt="Uploaded"
+                    className="w-32 h-32 object-cover rounded-full mx-auto mb-4"
+                  />
+                )}
                 <p className="text-sm text-gray-600 mb-2">
-                  Selected Style: <span className="font-medium">{selectedStyle}</span>
+                  Selected Style:{" "}
+                  <span className="font-medium">{selectedStyle}</span>
                 </p>
               </div>
               <button
                 onClick={handleGenerate}
-                disabled={isLoading}
+                disabled={isLoading || !uploadData}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium py-3 px-6 rounded-lg transition-colors"
               >
-                {isLoading ? 'Generating...' : 'Generate Headshot'}
+                {isLoading ? "Generating..." : "Generate Headshot"}
               </button>
             </div>
           </div>
@@ -134,9 +164,11 @@ function App() {
               Compare your original photo with the AI-generated headshot
             </p>
             <ComparisonView
-              originalImage={uploadedImage}
-              generatedImage={generatedImage}
+              originalImage={uploadData?.previewUrl}
+              generatedImage={generatedData?.imageUrl}
+              downloadUrl={generatedData?.downloadUrl}
               style={selectedStyle}
+              processingTime={generatedData?.processingTime}
             />
             <div className="mt-8 space-x-4">
               <button
@@ -145,9 +177,15 @@ function App() {
               >
                 Start Over
               </button>
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Download Headshot
-              </button>
+              {generatedData && (
+                <a
+                  href={generatedData.downloadUrl}
+                  download
+                  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                >
+                  Download Headshot
+                </a>
+              )}
             </div>
           </div>
         )}
@@ -159,7 +197,7 @@ function App() {
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-sm text-gray-600">
-            Inspired by{' '}
+            Inspired by{" "}
             <a
               href="https://creatoreconomy.so/p/full-tutorial-build-an-ai-headshot-app-with-google-nano-banana-in-15-minutes"
               className="text-indigo-600 hover:text-indigo-500"

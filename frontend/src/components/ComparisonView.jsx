@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
-import { Download, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import React, { useState } from "react";
+import { Download, ZoomIn, ZoomOut } from "lucide-react";
 
-const ComparisonView = ({ originalImage, generatedImage, style }) => {
+const ComparisonView = ({ originalImage, generatedImage, downloadUrl, style, processingTime }) => {
   const [isZoomed, setIsZoomed] = useState(false);
 
   const handleDownload = () => {
-    // Mock download functionality for Milestone 1
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    link.download = `professional-headshot-${style.toLowerCase().replace(' ', '-')}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank');
+    }
   };
 
   return (
@@ -21,15 +17,21 @@ const ComparisonView = ({ originalImage, generatedImage, style }) => {
         {/* Original Image */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Original Photo</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Original Photo
+            </h3>
           </div>
           <div className="p-6">
-            <div className={`relative overflow-hidden rounded-lg ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}>
+            <div
+              className={`relative overflow-hidden rounded-lg ${
+                isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+              }`}
+            >
               <img
                 src={originalImage}
                 alt="Original"
                 className={`w-full h-96 object-cover transition-transform duration-300 ${
-                  isZoomed ? 'transform scale-150' : 'transform scale-100'
+                  isZoomed ? "transform scale-150" : "transform scale-100"
                 }`}
                 onClick={() => setIsZoomed(!isZoomed)}
               />
@@ -41,7 +43,9 @@ const ComparisonView = ({ originalImage, generatedImage, style }) => {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Professional Headshot</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Professional Headshot
+              </h3>
               <p className="text-sm text-gray-600">{style} Style</p>
             </div>
             <button
@@ -53,15 +57,31 @@ const ComparisonView = ({ originalImage, generatedImage, style }) => {
             </button>
           </div>
           <div className="p-6">
-            <div className={`relative overflow-hidden rounded-lg ${isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}>
-              {/* Placeholder for generated image in Milestone 1 */}
-              <div className="w-full h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-indigo-200 rounded-full mx-auto mb-4"></div>
-                  <p className="text-indigo-600 font-medium">Generated Headshot</p>
-                  <p className="text-sm text-indigo-500">{style} Style</p>
+            <div
+              className={`relative overflow-hidden rounded-lg ${
+                isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+              }`}
+            >
+              {generatedImage ? (
+                <img
+                  src={generatedImage}
+                  alt="Generated Headshot"
+                  className={`w-full h-96 object-cover transition-transform duration-300 ${
+                    isZoomed ? "transform scale-150" : "transform scale-100"
+                  }`}
+                  onClick={() => setIsZoomed(!isZoomed)}
+                />
+              ) : (
+                <div className="w-full h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-indigo-200 rounded-full mx-auto mb-4"></div>
+                    <p className="text-indigo-600 font-medium">
+                      Generated Headshot
+                    </p>
+                    <p className="text-sm text-indigo-500">{style} Style</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -73,21 +93,31 @@ const ComparisonView = ({ originalImage, generatedImage, style }) => {
           onClick={() => setIsZoomed(!isZoomed)}
           className="flex items-center space-x-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
         >
-          {isZoomed ? <ZoomOut className="w-4 h-4" /> : <ZoomIn className="w-4 h-4" />}
-          <span>{isZoomed ? 'Zoom Out' : 'Zoom In'}</span>
+          {isZoomed ? (
+            <ZoomOut className="w-4 h-4" />
+          ) : (
+            <ZoomIn className="w-4 h-4" />
+          )}
+          <span>{isZoomed ? "Zoom Out" : "Zoom In"}</span>
         </button>
       </div>
 
       {/* Stats/Info */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Generation Details</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Generation Details
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-600 mb-1">3.2s</div>
+            <div className="text-2xl font-bold text-indigo-600 mb-1">
+              {processingTime ? `${(processingTime / 1000).toFixed(1)}s` : 'N/A'}
+            </div>
             <div className="text-sm text-gray-600">Generation Time</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600 mb-1">{style}</div>
+            <div className="text-2xl font-bold text-green-600 mb-1">
+              {style}
+            </div>
             <div className="text-sm text-gray-600">Selected Style</div>
           </div>
           <div className="text-center">

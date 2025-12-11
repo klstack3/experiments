@@ -1,51 +1,95 @@
-import React, { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Upload, Image } from 'lucide-react';
+import React, { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { Upload, Image, AlertCircle } from "lucide-react";
+import apiClient from '../utils/api';
 
 const ImageUpload = ({ onImageUpload }) => {
-  const onDrop = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onImageUpload(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, [onImageUpload]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      setError(null);
+
+      try {
+        // Upload to backend API
+        const uploadResult = await apiClient.uploadImage(file);
+        
+        if (uploadResult.success) {
+          // Create preview URL for UI
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            onImageUpload({
+              previewUrl: e.target.result,
+              sessionId: uploadResult.data.sessionId,
+              originalName: file.name
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+      } catch (error) {
+        console.error('Upload failed:', error);
+        setError(error.message);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [onImageUpload]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
+      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
     },
     maxSize: 10 * 1024 * 1024, // 10MB
-    multiple: false
+    multiple: false,
   });
 
   return (
     <div className="max-w-2xl mx-auto">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
+      
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
-          isDragActive
-            ? 'border-indigo-400 bg-indigo-50'
-            : 'border-gray-300 bg-white hover:border-indigo-400 hover:bg-gray-50'
+          isUploading 
+            ? "border-indigo-400 bg-indigo-50 opacity-75 cursor-wait"
+            : isDragActive
+            ? "border-indigo-400 bg-indigo-50"
+            : "border-gray-300 bg-white hover:border-indigo-400 hover:bg-gray-50"
         }`}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} disabled={isUploading} />
         <div className="flex flex-col items-center justify-center space-y-4">
-          {isDragActive ? (
+          {isUploading ? (
+            <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          ) : isDragActive ? (
             <Upload className="w-16 h-16 text-indigo-400" />
           ) : (
             <Image className="w-16 h-16 text-gray-400" />
           )}
           <div>
             <p className="text-xl font-medium text-gray-900 mb-2">
-              {isDragActive ? 'Drop your photo here' : 'Upload your photo'}
+              {isUploading 
+                ? "Uploading..." 
+                : isDragActive 
+                ? "Drop your photo here" 
+                : "Upload your photo"}
             </p>
             <p className="text-gray-600">
-              Drag and drop your image here, or click to select
+              {isUploading 
+                ? "Please wait while we process your image..."
+                : "Drag and drop your image here, or click to select"}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Supports JPG, PNG, WebP up to 10MB
@@ -53,7 +97,7 @@ const ImageUpload = ({ onImageUpload }) => {
           </div>
         </div>
       </div>
-      
+
       <div className="mt-6 text-center">
         <h3 className="text-lg font-medium text-gray-900 mb-3">
           Tips for best results:
