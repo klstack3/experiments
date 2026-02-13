@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bash Navigation & Manipulation Cheatsheet</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📟</text></svg>">
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap"
       rel="stylesheet"
@@ -120,6 +119,110 @@
         font-size: 12px;
         letter-spacing: 0.05em;
         text-transform: uppercase;
+      }
+
+      /* Search Bar */
+      .search-container {
+        margin-bottom: 32px;
+      }
+
+      .search-box {
+        position: relative;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 14px;
+        z-index: 10;
+      }
+
+      #searchInput {
+        width: 100%;
+        padding: 14px 50px 14px 48px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s ease;
+      }
+
+      #searchInput:focus {
+        border-color: var(--accent);
+        background: var(--surface2);
+        box-shadow: 0 0 0 2px rgba(0, 229, 160, 0.1);
+      }
+
+      #searchInput::placeholder {
+        color: var(--muted);
+        opacity: 0.7;
+      }
+
+      .search-clear {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .search-clear.visible {
+        opacity: 1;
+      }
+
+      .search-clear:hover {
+        color: var(--text);
+      }
+
+      .search-results {
+        margin-top: 16px;
+        color: var(--text-dim);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .no-results {
+        color: var(--muted);
+        font-style: italic;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .filtered .section {
+        display: none;
+      }
+
+      .filtered .section.show {
+        display: block;
+      }
+
+      .filtered .section.show tr {
+        display: none;
+      }
+
+      .filtered .section.show tr.match {
+        display: table-row;
+      }
+
+      .filtered .section.show tr.divider {
+        display: table-row;
+      }
+
+      .filtered .section.show .section-header {
+        display: flex;
       }
 
       /* Grid layout */
@@ -394,7 +497,22 @@
         </p>
       </header>
 
-      <div class="grid">
+      <!-- Search Bar -->
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search commands... (e.g., 'cd', 'ls', 'grep')"
+            autocomplete="off"
+          />
+          <span class="search-clear" id="searchClear">✕</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+
+      <div class="grid" id="mainGrid">
         <!-- NAVIGATION -->
         <div class="section theme-nav">
           <div class="section-header">
@@ -1554,5 +1672,124 @@
         >
       </footer>
     </div>
+
+    <script>
+      const searchInput = document.getElementById("searchInput");
+      const searchClear = document.getElementById("searchClear");
+      const searchResults = document.getElementById("searchResults");
+      const mainGrid = document.getElementById("mainGrid");
+      const sections = document.querySelectorAll(".section");
+
+      let searchActive = false;
+
+      // Search functionality
+      function performSearch(query) {
+        query = query.toLowerCase().trim();
+
+        if (!query) {
+          clearSearch();
+          return;
+        }
+
+        searchActive = true;
+        mainGrid.classList.add("filtered");
+
+        let matchCount = 0;
+        let sectionCount = 0;
+
+        sections.forEach((section) => {
+          const rows = section.querySelectorAll("tr:not(.divider)");
+          let sectionHasMatches = false;
+
+          rows.forEach((row) => {
+            const cmdCell = row.querySelector(".cmd-col");
+            if (cmdCell) {
+              const cmdText = cmdCell.textContent.toLowerCase();
+              const words = cmdText.split(/\s+/);
+              const firstWord = words[0] || "";
+
+              // Check if command starts with query or if any word starts with query
+              const matches =
+                firstWord.startsWith(query) ||
+                words.some((word) => word.startsWith(query)) ||
+                cmdText.includes(query);
+
+              if (matches) {
+                row.classList.add("match");
+                sectionHasMatches = true;
+                matchCount++;
+              } else {
+                row.classList.remove("match");
+              }
+            }
+          });
+
+          if (sectionHasMatches) {
+            section.classList.add("show");
+            sectionCount++;
+          } else {
+            section.classList.remove("show");
+          }
+        });
+
+        // Update search results
+        if (matchCount === 0) {
+          searchResults.innerHTML =
+            '<div class="no-results">No commands found matching "' +
+            query +
+            '"</div>';
+        } else {
+          searchResults.innerHTML = `Found ${matchCount} command${matchCount !== 1 ? "s" : ""} in ${sectionCount} section${sectionCount !== 1 ? "s" : ""}`;
+        }
+      }
+
+      function clearSearch() {
+        searchActive = false;
+        mainGrid.classList.remove("filtered");
+        sections.forEach((section) => {
+          section.classList.remove("show");
+          const rows = section.querySelectorAll("tr");
+          rows.forEach((row) => row.classList.remove("match"));
+        });
+        searchResults.innerHTML = "";
+      }
+
+      // Event listeners
+      searchInput.addEventListener("input", function () {
+        const query = this.value;
+
+        if (query.length > 0) {
+          searchClear.classList.add("visible");
+        } else {
+          searchClear.classList.remove("visible");
+        }
+
+        performSearch(query);
+      });
+
+      searchClear.addEventListener("click", function () {
+        searchInput.value = "";
+        searchClear.classList.remove("visible");
+        clearSearch();
+        searchInput.focus();
+      });
+
+      // Clear search on escape key
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          searchInput.value = "";
+          searchClear.classList.remove("visible");
+          clearSearch();
+        }
+      });
+
+      // Focus search input on Ctrl/Cmd + F
+      document.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
+    </script>
   </body>
 </html>
