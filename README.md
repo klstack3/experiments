@@ -1,54 +1,23 @@
 # Experiments Repository
 
-Misc. things I'm playing with - showcasing modern web development and AI integration.
+A personal development monorepo showcasing various web development projects and experiments. Each project is self-contained within its own directory and can be independently deployed to GitHub Pages.
 
-## 🚀 Current Projects
+## 🏗️ Monorepo Structure
 
-### Professional Headshot AI Generator
+This repository is organized as a monorepo where each project lives in its own directory with dedicated documentation and dependencies:
 
-A React-based web application that transforms user photos into professional headshots using Google's Imagen 3 AI (Nano Banana). Users can choose from three professional styles and compare results side-by-side.
-**Status**: Milestone 1 ✅ COMPLETE - Full React UI with TailwindCSS 3
-
-#### 🎯 Features
-
-- **Three Professional Styles**: Corporate Classic, Creative Professional, Executive Portrait
-- **Drag-and-Drop Upload**: Easy image upload with validation
-- **Side-by-Side Comparison**: Compare original vs generated headshots
-- **Responsive Design**: Works perfectly on desktop and mobile
-- **Step-by-Step Flow**: Intuitive 4-step user experience
-
-#### 🛠️ Tech Stack
-
-- **Frontend**: React 19, Vite 7, TailwindCSS 3
-- **Backend**: Express.js (planned for Milestone 2)
-- **AI**: Google Imagen 3 API (Nano Banana)
-- **Icons**: Lucide React
-- **File Handling**: React Dropzone
-
-#### 🏃‍♂️ Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/klstack3/experiments.git
-cd experiments
-
-# Install frontend dependencies
-cd frontend
-npm install
-
-# Start development server
-npm run dev
+```
+experiments/
+├── bash-cheatsheet/          # Interactive bash command reference
+│   ├── index.html           # Main HTML file (GitHub Pages entry)
+│   └── README.md            # Project documentation
+├── project-2/               # Future project
+│   ├── index.html
+│   └── README.md
+└── README.md                # This file - monorepo overview
 ```
 
-Visit `http://localhost:5173` to see the app in action!
-
-#### 🔗 Credits & Inspiration
-
-This project is inspired by the excellent tutorial from Creator Economy:
-
-- **Original Tutorial**: [Build an AI Headshot App with Google Nano Banana](https://creatoreconomy.so/p/full-tutorial-build-an-ai-headshot-app-with-google-nano-banana-in-15-minutes)
-
----
+## 🚀 Current Projects
 
 ### Bash Navigation & Manipulation Cheatsheet 📟
 
@@ -76,32 +45,156 @@ An interactive, terminal-inspired cheat sheet for Bash navigation and file manip
 
 Visit the [Bash Cheatsheet](https://klstack3.github.io/experiments/bash-cheatsheet/) to use the interactive reference.
 
-#### 📋 Command Categories
-
-- Navigation Commands (cd, pwd, ls, find, locate)
-- File & Directory Operations (mkdir, rm, cp, mv, touch)
-- File Content & Viewing (cat, grep, head, tail)
-- File Permissions & Ownership (chmod, chown, chgrp)
-- System Information (df, du, ps, top, uname)
-- Network & Connectivity (ping, curl, wget, ssh)
-- Archive & Compression (tar, zip, unzip, gzip)
-- Text Processing (sort, uniq, wc, cut, awk, sed)
-
 ---
 
-## 🎨 Other Projects
+## 📚 How to Add New Projects
 
-### Love Letters 💌
+### 1. Create Project Directory
 
-**Now in its own repository**: [klstack3/love-letters](https://github.com/klstack3/love-letters)
-A minimalist, visually stunning 3D globe visualization showing flight routes between two people as digital art. Built with React, TypeScript, and Mapbox GL.
+```bash
+mkdir my-new-project
+cd my-new-project
+```
 
-- ✨ Interactive 3D globe with beautiful flight routes
-- 🎨 Artistic visualization with gradient colors
-- 💌 Golden envelope icons for special meeting places
-- 📅 Date tooltips on hover
+### 2. Add Project Files
 
----
+- Create `index.html` as the main entry point (required for GitHub Pages)
+- Add a `README.md` with project-specific documentation
+- Include any additional assets, stylesheets, or scripts
+
+### 3. Update Main README
+
+Add your project to the "Current Projects" section in this README.md
+
+### 4. Commit and Push
+
+```bash
+git add my-new-project/
+git commit -m "Add new project: My New Project"
+git push origin main
+```
+
+## 🌐 GitHub Pages Deployment
+
+### Automatic Deployment
+
+This repository is configured for GitHub Pages deployment from the `main` branch. Any project with an `index.html` file will be automatically accessible at:
+
+```
+https://klstack3.github.io/experiments/[project-name]/
+```
+
+### Setting up GitHub Pages (if not already enabled)
+
+1. **Repository Settings**
+   - Go to your repository on GitHub
+   - Click "Settings" tab
+   - Scroll to "Pages" section
+
+2. **Configure Source**
+   - Source: "Deploy from a branch"
+   - Branch: `main`
+   - Folder: `/ (root)`
+
+3. **Wait for Deployment**
+   - GitHub will build and deploy automatically
+   - Check the "Actions" tab for deployment status
+   - Your site will be live within a few minutes
+
+### Project-Specific Deployment Requirements
+
+For each project to work properly with GitHub Pages:
+
+#### ✅ Required Files
+
+- **`index.html`** - Main entry point (GitHub Pages serves this automatically)
+- **`README.md`** - Project documentation
+
+#### 🎨 Best Practices
+
+- **Self-contained**: Each project should include all necessary assets
+- **Relative paths**: Use relative links for internal resources
+- **No build process**: Static files work best (HTML, CSS, JS)
+- **Responsive design**: Ensure mobile compatibility
+
+#### 📁 Example Project Structure
+
+```
+my-project/
+├── index.html              # Main HTML file
+├── README.md               # Project documentation
+├── css/
+│   └── styles.css          # Stylesheets
+├── js/
+│   └── app.js              # JavaScript files
+└── assets/
+    ├── images/             # Images and graphics
+    └── fonts/              # Custom fonts (if any)
+```
+
+### Testing Locally
+
+Before pushing, test your project locally:
+
+```bash
+# Navigate to project directory
+cd my-new-project
+
+# Open in browser (macOS)
+open index.html
+
+# Or use a simple HTTP server
+python -m http.server 8000
+# Then visit http://localhost:8000
+```
+
+### Custom Domain (Optional)
+
+To use a custom domain:
+
+1. Add a `CNAME` file in the repository root
+2. Configure DNS settings with your domain provider
+3. Update GitHub Pages settings to use custom domain
+
+## 🔧 Development Workflow
+
+### Clone and Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/klstack3/experiments.git
+cd experiments
+
+# Work on existing project
+cd existing-project
+
+# Or create new project
+mkdir new-project && cd new-project
+```
+
+### Working with Projects
+
+Each project is independent and can use its own:
+
+- **Tech stack** (vanilla JS, React, Vue, etc.)
+- **Build process** (though static files work best for GitHub Pages)
+- **Dependencies** (package.json, etc.)
+
+### Committing Changes
+
+```bash
+# Add specific project
+git add my-project/
+
+# Or add multiple projects
+git add .
+
+# Commit with descriptive message
+git commit -m "Update: Enhanced bash cheatsheet UI"
+
+# Push to deploy
+git push origin main
+```
 
 ## 📝 License
 
@@ -109,4 +202,8 @@ MIT License - See individual project directories for specific details.
 
 ## 🤝 Contributing
 
-This is a public coding portfolio showcasing various experiments and learning projects. Feel free to explore the code and suggest improvements!
+This is a personal development portfolio showcasing various experiments and learning projects. Each project directory contains its own documentation and contribution guidelines.
+
+---
+
+_Happy experimenting! 🧪_
